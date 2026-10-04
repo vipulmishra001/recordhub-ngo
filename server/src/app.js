@@ -16,21 +16,45 @@ app.use(helmet({
 }));
 
 // 2. CORS Configuration
-const allowedOrigins = [
-  config.CLIENT_URL,
+// Parse CLIENT_URL (supports single URL, comma-separated URLs, and removes trailing slashes)
+const configuredOrigins = (config.CLIENT_URL || '')
+  .split(',')
+  .map((url) => url.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+const defaultOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173'
 ];
 
+const allowedOrigins = Array.from(new Set([...configuredOrigins, ...defaultOrigins]));
+
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Blocked by CORS policy'));
+    // Allow requests with no origin (like mobile apps, curl, health-checks, or server-to-server)
+    if (!origin) {
+      return callback(null, true);
     }
+
+    const normalizedOrigin = origin.trim().replace(/\/+$/, '');
+
+    // Check against configured and default allowed origins
+    if (allowedOrigins.includes(normalizedOrigin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+
+    // Allow Vercel preview deployments if a Vercel domain is configured
+    try {
+      const parsed = new URL(origin);
+      if (parsed.hostname.endsWith('.vercel.app') && allowedOrigins.some((o) => o.includes('.vercel.app'))) {
+        return callback(null, true);
+      }
+    } catch (_) {
+      // Ignore invalid URL parse
+    }
+
+    return callback(new Error('Blocked by CORS policy'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

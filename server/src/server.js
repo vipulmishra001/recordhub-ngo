@@ -7,11 +7,12 @@ const startServer = async () => {
   // Connect to Database
   await connectDB();
 
-  // Start HTTP Listener
-  const server = app.listen(config.PORT, () => {
+  // Start HTTP Listener on 0.0.0.0 (required for Render / cloud containers)
+  const server = app.listen(config.PORT, '0.0.0.0', () => {
     logger.info(`====================================================`);
     logger.info(` NGO Digital Record System API Server is Running!`);
     logger.info(` Mode: [${config.NODE_ENV}]`);
+    logger.info(` Host: [0.0.0.0]`);
     logger.info(` Port: [${config.PORT}]`);
     logger.info(` Health Check: http://localhost:${config.PORT}/api/v1/health`);
     logger.info(`====================================================`);

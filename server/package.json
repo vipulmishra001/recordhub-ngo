@@ -12,7 +12,7 @@
     "test:users": "node src/scripts/testPhase3Users.js",
     "test:students": "node src/scripts/testPhase3Students.js",
     "test:programs": "node src/scripts/testPhase3Programs.js",
-    "test": "node src/scripts/testPhase2Auth.js"
+    "test": "node src/scripts/runAllTests.js"
   },
   "keywords": [],
   "author": "",

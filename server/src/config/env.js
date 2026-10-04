@@ -1,8 +1,9 @@
 const dotenv = require('dotenv');
 const path = require('path');
 
-// Load environment variables from .env file
+// Load environment variables from .env file (server directory or root)
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config();
 
 const config = {
   PORT: process.env.PORT || 5000,
@@ -23,6 +24,9 @@ if (config.NODE_ENV === 'production') {
   }
   if (!process.env.MONGODB_URI) {
     throw new Error('FATAL: MONGODB_URI must be provided in production.');
+  }
+  if (process.env.MONGODB_URI.includes('127.0.0.1') || process.env.MONGODB_URI.includes('localhost')) {
+    throw new Error('FATAL: Production MONGODB_URI cannot point to localhost or 127.0.0.1. Please configure your remote MongoDB Atlas connection string.');
   }
 }
 
